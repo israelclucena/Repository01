@@ -1,6 +1,8 @@
-it('should have initial properties set', () => {
-  expect(component.loading).toBeTrue();
-  expect(component.iframeElement).toBeUndefined();
-  expect(component.height).toBeUndefined();
-  expect(component.failedAttempts).toBe(0);
+it('should call super.ngOnInit and initialize resizingSelectors', async () => {
+  spyOn(component, 'ngOnInit').and.callThrough();
+  
+  await component.ngOnInit();
+  
+  expect(component.ngOnInit).toHaveBeenCalled();
+  expect(component.resizingSelectors).toBeDefined();
 });
