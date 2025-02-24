@@ -4,10 +4,13 @@ it('deve configurar o srcdoc do iframe e chamar os métodos necessários', () =>
   component.ssoToken = 'token-exemplo';
   component.languageSelection = { value: 'en' };
 
-  // Espionando o método sanitizer
-  const sanitizeSpy = spyOn(component['sanitizer'], 'sanitize').and.callThrough();
-  const bypassSecuritySpy = spyOn(component['sanitizer'], 'bypassSecurityTrustHtml').and.callThrough();
+  // Mockando o método sanitize do sanitizer
+  const sanitizeMock = jasmine.createSpy().and.returnValue('sanitizedContent');
+  const bypassSecurityMock = jasmine.createSpy().and.returnValue('trustedHtml');
   
+  component['sanitizer'].sanitize = sanitizeMock;
+  component['sanitizer'].bypassSecurityTrustHtml = bypassSecurityMock;
+
   // Espionando os métodos que devem ser chamados
   const watchIframeHeightChangesSpy = spyOn(component, 'watchIframeHeightChanges');
   const eventsAvoidSessionExpiredSpy = spyOn(component, 'eventsAvoidSessionExpired');
@@ -20,13 +23,13 @@ it('deve configurar o srcdoc do iframe e chamar os métodos necessários', () =>
   component.loadIframeContent();
 
   // Verifica se o sanitize foi chamado
-  expect(sanitizeSpy).toHaveBeenCalled();
+  expect(sanitizeMock).toHaveBeenCalled();
 
   // Verifica se o bypassSecurityTrustHtml foi chamado
-  expect(bypassSecuritySpy).toHaveBeenCalled();
+  expect(bypassSecurityMock).toHaveBeenCalled();
 
   // Verifica se o srcdoc foi configurado corretamente
-  expect(iframeElement.nativeElement.srcdoc).toContain('<html>'); // Verifica se o srcdoc contém o conteúdo HTML
+  expect(iframeElement.nativeElement.srcdoc).toContain('sanitizedContent'); // Verifica se o srcdoc contém o conteúdo "sanitizedContent"
 
   // Verifica se os métodos watchIframeHeightChanges e eventsAvoidSessionExpired foram chamados
   expect(watchIframeHeightChangesSpy).toHaveBeenCalled();
