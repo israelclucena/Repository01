@@ -1,9 +1,3 @@
-# Repository01
-
-
-ahsuhau initial changes
-otpauth://totp/GitHub:IsraeLucena?secret=WOUYQB4KRLNIOK6P&issuer=GitHub
-
 /* eslint-disable */
 import {
   AfterViewInit, Component, ElementRef,
@@ -17,7 +11,7 @@ import { UtilsApiService } from 'src/app/services/utils/utils.api.service';
 import { MicrofrontDirective } from '@ng-darwin-wmf/microfront';
 import { langMap } from 'src/app/shared/utils/langMap';
 import { IFrameSettings } from 'src/app/interfaces/iframe.interface';
- 
+
 /**
  * @description Wraps and adds functionality to an iframe component
  */
@@ -28,11 +22,11 @@ import { IFrameSettings } from 'src/app/interfaces/iframe.interface';
 })
 export class IframeComponent extends MicrofrontDirective
   implements OnInit, OnChanges, AfterViewInit, OnDestroy {
- 
+
   @Input() public url?: string;
   @Input() public ssoToken?: string;
   @Output() registreUserInput = new EventEmitter<string>();
- 
+
   @ViewChild('iframe', { static: false }) iframe: ElementRef;
   public loading = true;
   public height?: any;
@@ -45,7 +39,7 @@ export class IframeComponent extends MicrofrontDirective
   private ignoreSelectors = this.utilsApiService.getSelectorsToIgnore();
   private resizingSelectors: [IFrameSettings];
   private iframeLocation: any;
- 
+
   /**
    * @description The Iframe Component constructor
    * @param routerManagment @see RoutingManagementService
@@ -61,7 +55,7 @@ export class IframeComponent extends MicrofrontDirective
       //console.log('iframe.component.ts: iframe lastPath', lastPath);
     });
   }
- 
+
   /**
    * @description Waits for the parameters to get parsed,
    * then updates the status and fetches the legacy URL
@@ -71,7 +65,7 @@ export class IframeComponent extends MicrofrontDirective
     await super.ngOnInit();
     this.resizingSelectors = this.utilsApiService.getSelectorsForIframeHeightResizing();
   }
- 
+
   /**
    * @description Emit an input message event when the input inputMessage is modified
    * @param changes The changes that occured
@@ -81,7 +75,7 @@ export class IframeComponent extends MicrofrontDirective
     this.updateIframeHeight();
     this.eventsAvoidSessionExpired();
   }
- 
+
   ngAfterViewInit(): void {
     if (this.url && this.ssoToken) {
       this.iframeElement = this.iframe;
@@ -89,11 +83,11 @@ export class IframeComponent extends MicrofrontDirective
       this.loadIframeContent();
     }
   }
- 
- 
+
+
   private loadIframeContent(): void {
- 
-    Iif (!this.url) {
+
+    if (!this.url) {
       throw new Error('URL is not defined');
     }
     
@@ -101,7 +95,7 @@ export class IframeComponent extends MicrofrontDirective
     const encodedSsoToken = encodeURIComponent(this.ssoToken ?? '');
     const encodedLanguage = encodeURIComponent(this.languageSelection.value);
     const encodedDeviceInfo = encodeURIComponent(sessionStorage?.getItem('device-info-token') ?? '');
- 
+
     const form = `
       <html>
         <form action="${actionURL.toString()}" id="iframe-form" class="iframe-form" method="post" target="iframe">
@@ -115,31 +109,31 @@ export class IframeComponent extends MicrofrontDirective
         </script>
       </html>
     `;
- 
-    Iif (this.iframeElement) {
+
+    if (this.iframeElement) {
       this.iframeElement.nativeElement.srcdoc = this.sanitizer.sanitize(SecurityContext.HTML, this.sanitizer.bypassSecurityTrustHtml(form));
       this.watchIframeHeightChanges();
       this.eventsAvoidSessionExpired();
     }
   }
- 
+
   /**
    * @description Function to set the height on iframe
    */
   private watchIframeHeightChanges(): void {
-    Iif (!this.iframeInterval) {
+    if (!this.iframeInterval) {
       this.failedAttempts = 0;
- 
+
       this.iframeInterval = setInterval(() => {
         this.updateIframeHeight();
- 
-        Iif (this.failedAttempts >= this.maxAttemptsIframeInterval) {
+
+        if (this.failedAttempts >= this.maxAttemptsIframeInterval) {
           clearInterval(this.iframeInterval);
         }
       }, this.refreshInterval);
     }
   }
- 
+
   /**
    * @description Function to set the height on iframe
    */
@@ -148,67 +142,67 @@ export class IframeComponent extends MicrofrontDirective
       const shadowRootIframe = this.getShadowRootIframe();
       const innerIframe: any = shadowRootIframe?.contentDocument?.querySelector("iframe");
       let height = 0;
- 
+
       const currentPath = window.location.pathname;
       let iFrameSettings = this.utilsApiService.getE2EIFrameHeightResizing().find(({url}) => currentPath.startsWith(url));
- 
-      Iif(!iFrameSettings) {
- 
-        Iif (!innerIframe) {
+
+      if(!iFrameSettings) {
+
+        if (!innerIframe) {
           throw Error('innerIframe not found');
         }
- 
+
         const documentUrl = innerIframe?.contentWindow?.location?.href;
-        Iif (!documentUrl) {
+        if (!documentUrl) {
           throw Error('documentUrl not found');
         }
       
         iFrameSettings = this.getIFrameSettings(documentUrl);
- 
+
         const rootComponent = innerIframe?.contentDocument?.querySelector(iFrameSettings?.selector) as HTMLElement;
- 
-        Iif (!rootComponent) {
+
+        if (!rootComponent) {
           throw Error(`Parent div not found for selector: ${iFrameSettings?.selector}`);
         }
- 
+
         height = Array.from(rootComponent.children)
           .filter(child => !this.isElementIgnored(child as HTMLElement))
           .map(child => child as HTMLElement)
           .reduce((total, child) => total + (child.offsetHeight ?? 0), 0);
       }
- 
+
       // Set iframe height
       this.failedAttempts = 0;
       shadowRootIframe.style.height = height + (iFrameSettings?.heightIncrease ?? 0) + "px";
       
-      Iif (this.height != height) {
+      if (this.height != height) {
         this.scrollToTop(shadowRootIframe);
       }
       this.height = height;
- 
+
     } catch (error: any) {
       this.logError(`error in updateIframeHeight | ${error?.message}`, error);
     }
   }
- 
+
   private getShadowRootIframe(): any {
     const legacyAppModule: any = document?.querySelector("legacy-app-module");
- 
+
     if (!legacyAppModule) {
       throw new Error('legacyAppModule not found');
     }
- 
+
     const shadowRoot: any = legacyAppModule?.shadowRoot?.querySelector("ng-component")?.shadowRoot;
     const shadowRootIframe: any = shadowRoot?.querySelector("app-iframe")?.querySelector("iframe");
- 
-    Iif (!shadowRootIframe) {
+
+    if (!shadowRootIframe) {
       throw new Error('shadowRootIframe not found');
     }
- 
+
     return shadowRootIframe;
   }
- 
- 
+
+
   private getIFrameSettings(documentUrl: string): IFrameSettings {
     // Remove query parameters from the URL
     documentUrl = documentUrl.split('?')[0];
@@ -222,27 +216,27 @@ export class IframeComponent extends MicrofrontDirective
   
     return iFrameSettings;
   }
- 
+
   private isExactMatch(documentUrl: string, url: string): boolean {
     return documentUrl === url;
   }
- 
+
   private isElementIgnored(element: HTMLElement): boolean {
     return this.ignoreSelectors.some(selector => element.matches(selector));
   }
- 
+
   private scrollToTop(shadowRootIframe?: any): void {
     const href = shadowRootIframe?.contentWindow?.location?.href;
- 
-    Iif (this.iframeLocation !== href) {
+
+    if (this.iframeLocation !== href) {
       this.iframeLocation = href;
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
- 
+
   private eventsAvoidSessionExpired(): void {
     const shadowRootIframe = this.getShadowRootIframe();
- 
+
     shadowRootIframe.contentWindow.addEventListener('mousemove', () => {
       this.registreUserInput.emit('mousemove');
     });
@@ -252,13 +246,13 @@ export class IframeComponent extends MicrofrontDirective
     shadowRootIframe.contentWindow.addEventListener('click', () => {
       this.registreUserInput.emit('click');
     });
- 
+
     const innerIframe: any = shadowRootIframe?.contentDocument?.querySelector("iframe");
- 
-    Iif (!innerIframe) {
+
+    if (!innerIframe) {
       throw Error('innerIframe not found');
     }
- 
+
     innerIframe.contentWindow.addEventListener('mousemove', () => {
       this.registreUserInput.emit('mousemove');
     });
@@ -269,12 +263,10 @@ export class IframeComponent extends MicrofrontDirective
       this.registreUserInput.emit('click');
     });
   }
- 
+
   private logError(message?: any, ...optionalParams: any[]): void {
     console.error(`iframe.component.ts: ${message}`, optionalParams);
     this.failedAttempts++;
   }
- 
-}
- 
 
+}
