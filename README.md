@@ -1,8 +1,9 @@
-it('should call super.ngOnInit and initialize resizingSelectors', async () => {
-  spyOn(component, 'ngOnInit').and.callThrough();
+it('should update iframe height and avoid session expiration on ngOnChanges', () => {
+  spyOn(component, 'updateIframeHeight');
+  spyOn(component, 'eventsAvoidSessionExpired');
+
+  component.ngOnChanges({});
   
-  await component.ngOnInit();
-  
-  expect(component.ngOnInit).toHaveBeenCalled();
-  expect(component.resizingSelectors).toBeDefined();
+  expect(component.updateIframeHeight).toHaveBeenCalled();
+  expect(component.eventsAvoidSessionExpired).toHaveBeenCalled();
 });
